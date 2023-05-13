@@ -1,8 +1,11 @@
+from numpy import * 
+import linecache as lc
+
+
 test3 = "t2_Deimos.txt"
 test2 = "t2_Europa.txt"
 test1 = "t2_Titan.txt"
 
-import linecache as lc
 
 def lectura(test):
     drones = []
@@ -34,7 +37,6 @@ def greedy_det(test):
 
     drones, delays, tot = lectura(test)
 
-    drones.sort(reverse=True, key = lambda x: x[3])
 
     for i in range(len(drones)):
         temp = drones[i]
@@ -44,6 +46,10 @@ def greedy_det(test):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
+
+    drones.sort(key = lambda x: x[3])
+
+    print(drones)
 
     for i in range(tot):
 
@@ -110,7 +116,7 @@ def greedy_det(test):
 
 
 
-def greedy_estoc(test):
+def greedy_estoc(test, seed):
 
     contar_term = {}
 
@@ -119,8 +125,10 @@ def greedy_estoc(test):
     resultado = []
     suma = 0
 
+    dronesmod = []
+
     drones, delays, tot = lectura(test)
-    drones.sort(reverse=True, key = lambda x: x[3])
+    
 
     for i in range(len(drones)):
         temp = drones[i]
@@ -131,26 +139,41 @@ def greedy_estoc(test):
         temp = temp.split(" ")
         delays[i] = temp
 
-    for i in range(tot):
+    drones.sort(key = lambda x: x[3])
 
+
+
+    ##################
+    #aqui el algoritmo
+
+    #Se crea un nuevo array modificado, buscando agrupar los tiempos de termino
+    for i in range(len(drones)):
+        drontemp = drones[i].copy()
+        temp = int(drontemp[3])
+        temp = int(temp/20)
+        temp = temp*20
+        drontemp[3] = temp
+        dronesmod.append(drontemp)
+    
+
+    print(drones)
+    print(dronesmod)
+
+
+    ######################################
+    ######################################
+    #Cuenta los grupos generados segun el metodo anterior, comentar al tener el programa listo (Mantener en el codigo)
+    contar_term = {}
+    for i in range(tot):
         if (drones[i][3] not in contar_term.keys()):
             contar_term[drones[i][3]] = 1
         else:
             contar_term[drones[i][3]] += 1
-
     #print(contar_term)
-    #print(len(contar_term.keys()))
+    print(len(contar_term.keys()))
+    ######################################
+    ######################################
 
-
-    #####
-    #aqui el algoritmo
-    for i in range(len(drones)):
-        temp = int(drones[i][3])
-
-        temp = int(temp/20)
-
-        temp = temp*20
-        drones[i][3] = temp
 
     #> Agrupar los datos segun su termino
 
@@ -160,7 +183,7 @@ def greedy_estoc(test):
 
     #####
 
-    print(drones)
+    #print(drones)
     #[[ndron, tiempo], costo]
     #resultado.append(suma)
     #print(resultado)
@@ -176,6 +199,6 @@ def greedy_estoc(test):
 ####
 
 
-#greedy_det(test3)
-
-greedy_estoc(test1)
+#greedy_det(test1)
+seed = 1
+greedy_estoc(test1, seed)
