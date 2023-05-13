@@ -208,25 +208,28 @@ def greedy_estoc(test, seed):
     
     indice = 0
 
+
     for i in range(tot):
+        numero_dron = random.randint(0, len(agrupacion[indice])-1)
+
+        #print(agrupacion[indice])
+        #print("numero ", numero_dron)
+        #print(len(agrupacion[indice]))
+        #print(numero_dron)
+        #print(timeline)
+        #Actualizar timeline en base al dron agregado anterior mente y el elegido actual
+        if (len(resultado) > 0):
+            #En el array delay del dron anterior, agregar la diferencia requeria por el dron actual
+            del_anterior = delays[int(resultado[-1][0])]
+            #print(del_anterior)
+            espera_actual = del_anterior[int(agrupacion[indice][numero_dron][0])]
+            #print(espera_actual)
+            timeline = timeline + int(espera_actual)
+
+
+
         if (i + 1 < tot):
 
-
-            numero_dron = random.randint(0, len(agrupacion[indice])-1)
-            
-            #print(agrupacion[indice])
-            #print("numero ", numero_dron)
-            #print(len(agrupacion[indice]))
-            #print(numero_dron)
-            #print(timeline)
-            #Actualizar timeline en base al dron agregado anterior mente y el elegido actual
-            if (len(resultado) > 0):
-                #En el array delay del dron anterior, agregar la diferencia requeria por el dron actual
-                del_anterior = delays[int(resultado[-1][0])]
-                #print(del_anterior)
-                espera_actual = del_anterior[int(agrupacion[indice][numero_dron][0])]
-                #print(espera_actual)
-                timeline = timeline + int(espera_actual)
 
             #print(timeline)
             #print(agrupacion[indice][numero_dron])
@@ -354,4 +357,4 @@ def greedy_estoc(test, seed):
 #greedy_det(test1)
 seed = 1
 for i in range(5):  
-    greedy_estoc(test3, i)
+    greedy_estoc(test1, i)
