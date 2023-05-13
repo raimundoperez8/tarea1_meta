@@ -1,4 +1,5 @@
-from numpy import * 
+from numpy import *
+import random
 import linecache as lc
 
 
@@ -122,13 +123,14 @@ def greedy_estoc(test, seed):
     #Variables y setup
     ##################
 
-    contar_term = {}
+    random.seed(seed)
 
-    agregados = 0
-    timeline = 0
-    resultado = []
+
+    timeline = 0 
+    agregados = 0  
     suma = 0
 
+    resultado = []
     dronesmod = []
 
     ##################
@@ -155,14 +157,14 @@ def greedy_estoc(test, seed):
     for i in range(len(drones)):
         drontemp = drones[i].copy()
         temp = int(drontemp[3])
-        temp = int(temp/20)
-        temp = temp*20
+        temp = int(temp/100)
+        temp = temp*100
         drontemp[3] = temp
         dronesmod.append(drontemp)
-    
 
-    print(drones)
-    print(dronesmod)
+    #print(drones)
+    #print(dronesmod)
+
 
 
     ######################################
@@ -175,12 +177,157 @@ def greedy_estoc(test, seed):
         else:
             contar_term[dronesmod[i][3]] += 1
     #print(contar_term)
-    print(len(contar_term.keys()))
+    #print(len(contar_term.keys()))
     ######################################
     ######################################
 
 
+    ######################################
     #> Agrupar los datos segun su termino
+    termino = -1
+    indice = -1
+    agrupacion = []
+    
+    for i in range(tot):
+        
+        if (termino != dronesmod[i][3]):
+            termino = dronesmod[i][3]
+            agrupacion.append([])
+            indice += 1
+            
+            agrupacion[indice].append(dronesmod[i])
+        else:
+            agrupacion[indice].append(dronesmod[i])
+    
+    #print(agrupacion)
+    #print(len(agrupacion))
+
+
+    ######################################  
+    #> Aplicar logica similar a la anterior:
+    
+    indice = 0
+
+    for i in range(tot):
+        if (i + 1 < tot):
+
+
+            numero_dron = random.randint(0, len(agrupacion[indice])-1)
+            
+            #print(agrupacion[indice])
+            #print("numero ", numero_dron)
+            #print(len(agrupacion[indice]))
+            #print(numero_dron)
+            #print(timeline)
+            #Actualizar timeline en base al dron agregado anterior mente y el elegido actual
+            if (len(resultado) > 0):
+                #En el array delay del dron anterior, agregar la diferencia requeria por el dron actual
+                del_anterior = delays[int(resultado[-1][0])]
+                #print(del_anterior)
+                espera_actual = del_anterior[int(agrupacion[indice][numero_dron][0])]
+                #print(espera_actual)
+                timeline = timeline + int(espera_actual)
+
+            #print(timeline)
+            #print(agrupacion[indice][numero_dron])
+            #print(agrupacion[indice][numero_dron][3])
+
+            #Optimo > Timeline
+            if int(agrupacion[indice][numero_dron][2]) >= timeline:
+                #print(timeline, agrupacion[indice][numero_dron][2])
+
+
+                #Comparte intervalo
+                if (len(agrupacion[indice]) > 1):
+                    #Calcular si el optimo es posible
+                    #print("oh no")
+                    posible = 1
+                    for j in range(len(agrupacion[indice])):
+                        if (j == numero_dron):
+                            continue
+                        else:
+                            lista_del = delays[int(agrupacion[indice][numero_dron][0])]
+                            diferencia = int(agrupacion[indice][numero_dron][2])
+                            #print(j)
+                            #print(agrupacion[indice])
+                            diferencia += int(lista_del[int(agrupacion[indice][j][0])])
+                            
+                            if (int(drones[int(agrupacion[indice][j][0])][3]) - diferencia < 0):
+                                posible = 0
+                            #print(diferencia)
+
+                    if (posible):
+                        timeline = int(agrupacion[indice][numero_dron][2])
+                        res = [agrupacion[indice][numero_dron][0], timeline]
+                        resultado.append(res)
+                        suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
+
+                        agregados +=1
+                        agrupacion[indice].pop(numero_dron)
+                        if (len(agrupacion[indice]) == 0):
+                            indice += 1
+
+                    else:
+                        res = [agrupacion[indice][numero_dron][0], timeline]
+                        resultado.append(res)
+                        suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
+
+                        agregados +=1
+        
+                        #Se elimina el elemento agregado
+                        agrupacion[indice].pop(numero_dron)
+                        if (len(agrupacion[indice]) == 0):
+                            indice += 1
+
+
+                #Unico/Ultimo en intervalo
+                #Apuesto por el optimo
+                else:
+                    
+                    timeline = int(agrupacion[indice][numero_dron][2])
+                    res = [agrupacion[indice][numero_dron][0], timeline]
+                    resultado.append(res)
+                    suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
+
+                    agregados +=1
+
+                    agrupacion[indice].pop(numero_dron)
+                    if (len(agrupacion[indice]) == 0):
+                        indice += 1
+
+
+            #el optimo ya paso
+            else:
+                res = [agrupacion[indice][numero_dron][0], timeline]
+                resultado.append(res)
+                suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
+
+                agregados +=1
+                
+                #Se elimina el elemento agregado
+                agrupacion[indice].pop(numero_dron)
+                if (len(agrupacion[indice]) == 0):
+                    indice += 1
+
+        else:
+            #el ultimo dron
+            #print("ultimo")
+            #print(numero_dron)
+            #print("indice", indice)
+            #print(agrupacion[indice])
+            res = [agrupacion[indice][0][0], timeline]
+            resultado.append(res)
+            suma += abs(int(agrupacion[indice][0][2]) - timeline)
+
+            agregados +=1
+
+    #[[ndron, tiempo], costo]
+    resultado.append(suma)
+    print(resultado)
+    
+
+
+    
 
     #> Aplicar logica similar a la anterior:
     #Selecciono uno del grupo al azar, veo si lo puedo mandar en el optimo sin matar al resto del grupo, lo añado en tiempo x (aqui hay que pensar un par de cosas)
@@ -192,7 +339,7 @@ def greedy_estoc(test, seed):
     #[[ndron, tiempo], costo]
     #resultado.append(suma)
     #print(resultado)
-    #print(agregados)
+    print(agregados)
     return resultado
 
 
@@ -206,4 +353,5 @@ def greedy_estoc(test, seed):
 
 #greedy_det(test1)
 seed = 1
-greedy_estoc(test1, seed)
+for i in range(5):  
+    greedy_estoc(test3, i)
