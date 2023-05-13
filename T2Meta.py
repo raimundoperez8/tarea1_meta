@@ -118,6 +118,10 @@ def greedy_det(test):
 
 def greedy_estoc(test, seed):
 
+    ##################
+    #Variables y setup
+    ##################
+
     contar_term = {}
 
     agregados = 0
@@ -127,9 +131,10 @@ def greedy_estoc(test, seed):
 
     dronesmod = []
 
-    drones, delays, tot = lectura(test)
-    
+    ##################
+    #Setup
 
+    drones, delays, tot = lectura(test)
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
@@ -138,11 +143,11 @@ def greedy_estoc(test, seed):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
-
     drones.sort(key = lambda x: x[3])
 
 
 
+    ##################
     ##################
     #aqui el algoritmo
 
@@ -165,10 +170,10 @@ def greedy_estoc(test, seed):
     #Cuenta los grupos generados segun el metodo anterior, comentar al tener el programa listo (Mantener en el codigo)
     contar_term = {}
     for i in range(tot):
-        if (drones[i][3] not in contar_term.keys()):
-            contar_term[drones[i][3]] = 1
+        if (dronesmod[i][3] not in contar_term.keys()):
+            contar_term[dronesmod[i][3]] = 1
         else:
-            contar_term[drones[i][3]] += 1
+            contar_term[dronesmod[i][3]] += 1
     #print(contar_term)
     print(len(contar_term.keys()))
     ######################################
