@@ -45,10 +45,13 @@ def greedy_det(test):
         delays[i] = temp
 
     drones.sort(key = lambda x: x[3])
-
+    #print(drones)
     for i in range(tot):
+        #print(i)
         if (i + 1 < tot):
+            #print(i)
             if int(drones[i][2]) >= timeline:
+                
 
                 #tiempo optimo posible
                 if int(drones[i+1][3]) >= int(drones[i][2]) + int(delays[int(drones[i][0])][int(drones[i+1][0])]):    
@@ -62,7 +65,7 @@ def greedy_det(test):
                     agregados +=1
 
                 #optimo "mata" al siguiente dron
-                elif (timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])]) <= int(drones[i+1][3])):
+                elif (timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])]) >= int(drones[i+1][3])):
                     res = [drones[i][0], timeline]
                     resultado.append(res)
 
@@ -71,8 +74,11 @@ def greedy_det(test):
                     timeline = timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])])
                     agregados +=1
 
+
             #el optimo ya paso
             else:
+                #print(i)
+                #print(res)
                 res = [drones[i][0], timeline]
                 resultado.append(res)
 
@@ -92,6 +98,7 @@ def greedy_det(test):
 
     #[[ndron, tiempo], costo]
     resultado.append(suma)
+    print("Solucion Greedy det:")
     print(resultado)
     print(agregados)
     return resultado
@@ -411,13 +418,14 @@ def hill_climbing_MM(test, sol_inicial, seed):
 #Main
 ####
 
-#greedy_det(test2)
+greedy_det(test3)
 
 seed = 1
 """
 for i in range(5):  
     greedy_estoc(test1, i)
-"""
+
 for seed in range(5):
 
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
+"""
