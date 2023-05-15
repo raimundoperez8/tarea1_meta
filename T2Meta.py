@@ -259,6 +259,7 @@ def greedy_estoc(test, seed):
 
     #[[ndron, tiempo], costo]
     resultado.append(suma)
+    print("Solucion Greedy Estoc:")
     print(resultado)
     print(agregados)
     return resultado
@@ -269,12 +270,31 @@ def greedy_estoc(test, seed):
 
     #####
 
+
 #Funcion para obtener el costo de una solucion
-def genera_costo_sol():
+def genera_costo_sol(vecino, delays, drones):
     suma = 0
 
-    #Aqui hay que agregar la forma en que se calcula el costo de los UAV, para poder calcular el costo de los vecinos generados
-    return suma
+    for dron in vecino:
+        
+        id = dron[0]
+        tiempo = dron[1]
+        suma += abs(int(tiempo) - int(drones[int(id)][2]))
+
+    
+    #Validate_sol(): if incalida suma += 100?
+    flag = 0
+    for i in range(len(vecino)-1):
+        if int(drones[int(vecino[i][0])][1]) <= int(vecino[i][1]) and int(drones[int(vecino[i][0])][3]) >= int(vecino[i][1]):
+            flag = 0
+        else:
+            flag = 200
+        if int(vecino[i][1]) + int(delays[int(vecino[i][0])][int(vecino[i+1][0])]) <= int(vecino[i+1][1]):
+            flag = 0
+        else:
+            flag = 200
+
+    return suma + flag
 
 
 #Funcion para obtener los vecinos de una solucion determinada
@@ -283,18 +303,28 @@ def genera_vecinos(solucion):
     for i in range(len(solucion)):
         for j in range(i + 1, len(solucion)):
             vecino = solucion.copy()
-            vecino[i] = solucion[j]
-            vecino[j] = solucion[i]
+
+            delta1 = random.randint(0,8) - 4
+            delta2 = random.randint(0,8) - 4
+
+            vecino[i] = solucion[j].copy()
+            vecino[i][1] = solucion[i][1] + delta1
+            vecino[j] = solucion[i].copy()
+            vecino[j][1] = solucion[j][1] + delta2
             vecinos.append(vecino)
+
+    #print("vecinos")
+    #print(vecinos[0])
+    
     return vecinos
 
 
-def obt_mejor_vecino(vecinos):
-    mejor_costo = genera_costo_sol(vecinos[0]) #costo del primer vecino para iniciarlo
+def obt_mejor_vecino(vecinos, delays, drones):
+    mejor_costo = genera_costo_sol(vecinos[0], delays, drones) #costo del primer vecino para iniciarlo
     mejor_vecino = vecinos[0]
 
     for vecino in vecinos:
-        costo_actual = genera_costo_sol(vecino)
+        costo_actual = genera_costo_sol(vecino, delays, drones)
         
         if (costo_actual < mejor_costo):
             mejor_costo = costo_actual
@@ -303,38 +333,67 @@ def obt_mejor_vecino(vecinos):
     return mejor_vecino, mejor_costo
 
 
-def hill_climbing_AM(test, sol_inicial):
+def hill_climbing_AM(test, sol_inicial, seed):
+    random.seed(seed)
 
     drones, delays, tot = lectura(test)
+
+    for i in range(len(drones)):
+        temp = drones[i]
+        temp = temp.split(" ")
+        drones[i] = temp
+
+    for i in range(len(delays)):
+        temp = delays[i]
+        temp = temp.split(" ")
+        delays[i] = temp
+
+
     costo_inicial = sol_inicial[len(sol_inicial)-1]
     sol_inicial.pop(len(sol_inicial)-1)
 
     sol_actual = sol_inicial
     costo_actual = costo_inicial
     vecinos_actuales = genera_vecinos(sol_actual)
-    mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales)
+    mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
     #revisar condiciones para seguir iterando
     while mejor_costo < costo_actual:
         sol_actual = mejor_vecino
         costo_actual = mejor_costo
         vecinos_actuales = genera_vecinos(sol_actual)
-        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales)
+        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
     sol_actual.append(costo_actual) 
+    
+    print("solucion Hill AM:")
+    print(sol_actual)
 
     return sol_actual
 
 
-def hill_climbing_MM(test, sol_inicial):
+def hill_climbing_MM(test, sol_inicial, seed):
+    random.seed(seed)
 
     drones, delays, tot = lectura(test)
+
+    for i in range(len(drones)):
+        temp = drones[i]
+        temp = temp.split(" ")
+        drones[i] = temp
+
+    for i in range(len(delays)):
+        temp = delays[i]
+        temp = temp.split(" ")
+        delays[i] = temp
+
     costo_inicial = sol_inicial[len(sol_inicial)-1]
     sol_inicial.pop(len(sol_inicial)-1)
 
     sol_actual = sol_inicial
     costo_actual = costo_inicial
     vecinos_actuales = genera_vecinos(sol_actual)
+    #print(vecinos_actuales)
     mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales)
 
     #revisar condiciones para seguir iterando
@@ -352,10 +411,13 @@ def hill_climbing_MM(test, sol_inicial):
 #Main
 ####
 
-greedy_det(test1)
+#greedy_det(test2)
 
 seed = 1
+"""
 for i in range(5):  
     greedy_estoc(test1, i)
+"""
+for seed in range(5):
 
-#hill_climbing_AM(test1, greedy_det(test1))
+    hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
