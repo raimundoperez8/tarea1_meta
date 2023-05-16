@@ -1,6 +1,7 @@
 from numpy import *
 import random
 import linecache as lc
+import time
 
 test3 = "t2_Deimos.txt"
 test2 = "t2_Europa.txt"
@@ -405,12 +406,16 @@ def hill_climbing_MM(test, sol_inicial, seed):
     #print(vecinos_actuales)
     mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
+    t_inicio = time.time()
     #revisar condiciones para seguir iterando
     while mejor_costo < costo_actual:
         sol_actual = mejor_vecino
         costo_actual = mejor_costo
         vecinos_actuales = genera_vecinos(sol_actual)
         mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+        t_actual = time.time()
+        if (t_actual-t_inicio > 180):
+            break
 
     sol_actual.append(costo_actual) 
 
@@ -423,15 +428,17 @@ def hill_climbing_MM(test, sol_inicial, seed):
 #Main
 ####
 
-#greedy_det(test3)
+greedy_det(test3)
 
 seed = 1
 """
 for i in range(5):  
     greedy_estoc(test1, i)
-
+"""
+"""
 for seed in range(5):
 
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
+    hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
 """
-hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
+hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
