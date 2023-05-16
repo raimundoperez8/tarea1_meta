@@ -370,6 +370,8 @@ def hill_climbing_AM(test, sol_inicial, seed):
         costo_actual = mejor_costo
         vecinos_actuales = genera_vecinos(sol_actual)
         mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+        if mejor_costo < costo_actual:
+            break
 
     sol_actual.append(costo_actual) 
     
@@ -401,24 +403,27 @@ def hill_climbing_MM(test, sol_inicial, seed):
     costo_actual = costo_inicial
     vecinos_actuales = genera_vecinos(sol_actual)
     #print(vecinos_actuales)
-    mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales)
+    mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
     #revisar condiciones para seguir iterando
     while mejor_costo < costo_actual:
         sol_actual = mejor_vecino
         costo_actual = mejor_costo
         vecinos_actuales = genera_vecinos(sol_actual)
-        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales)
+        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
     sol_actual.append(costo_actual) 
-       
+
+    print("solucion Hill MM:")
+    print(sol_actual)
+
     return sol_actual
 
 ####
 #Main
 ####
 
-greedy_det(test3)
+#greedy_det(test3)
 
 seed = 1
 """
@@ -429,3 +434,4 @@ for seed in range(5):
 
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
 """
+hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
