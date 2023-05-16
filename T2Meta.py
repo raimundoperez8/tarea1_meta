@@ -424,21 +424,135 @@ def hill_climbing_MM(test, sol_inicial, seed):
 
     return sol_actual
 
+
+
+def tabu_search(test, sol_inicial, seed, iters=10, size=3):
+    random.seed(seed)
+
+    drones, delays, tot = lectura(test)
+
+    for i in range(len(drones)):
+        temp = drones[i]
+        temp = temp.split(" ")
+        drones[i] = temp
+
+    for i in range(len(delays)):
+        temp = delays[i]
+        temp = temp.split(" ")
+        delays[i] = temp
+
+    costo_inicial = sol_inicial[len(sol_inicial)-1]
+    sol_inicial.pop(len(sol_inicial)-1)
+
+
+    #tabu logic
+
+    """
+    Pure implementation of Tabu search algorithm for a Travelling Salesman Problem in Python.
+ 
+    :param first_solution: The solution for the first iteration of Tabu search using the redundant resolution strategy
+    in a list.
+    :param distance_of_first_solution: The total distance that Travelling Salesman will travel, if he follows the path
+    in first_solution.
+    :param dict_of_neighbours: Dictionary with key each node and value a list of lists with the neighbors of the node
+    and the cost (distance) for each neighbor.
+    :param iters: The number of iterations that Tabu search will execute.
+    :param size: The size of Tabu List.
+    :return best_solution_ever: The solution with the lowest distance that occurred during the execution of Tabu search.
+    :return best_cost: The total distance that Travelling Salesman will travel, if he follows the path in best_solution
+    ever.
+ 
+    """
+    
+    #first_solution, distance_of_first_solution, dict_of_neighbours, iters, size
+
+    count = 1
+
+
+    solution = sol_inicial    
+    best_cost = costo_inicial
+
+    tabu_list = list()
+
+    best_solution_ever = solution
+ 
+    while count <= iters:
+
+        vecinos_actuales = genera_vecinos(solution)
+        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+
+        index_of_best_solution = 0
+
+        best_solution = mejor_vecino
+        #best_cost_index = len(best_solution) - 1
+ 
+        found = False
+        while found is False:
+            i = 0
+            while i < len(best_solution):
+ 
+                if best_solution[i] != solution[i]:
+                    first_exchange_node = best_solution[i]
+                    second_exchange_node = solution[i]
+                    break
+                i = i + 1
+ 
+            if [first_exchange_node, second_exchange_node] not in tabu_list and [
+                second_exchange_node,
+                first_exchange_node,
+            ] not in tabu_list:
+                tabu_list.append([first_exchange_node, second_exchange_node])
+                found = True
+                solution = best_solution
+                cost = mejor_costo
+                if cost < best_cost:
+                    best_cost = cost
+                    best_solution_ever = solution
+            else:
+                index_of_best_solution = index_of_best_solution + 1
+                best_solution = mejor_vecino
+ 
+        if len(tabu_list) >= size:
+            tabu_list.pop(0)
+ 
+        count = count + 1
+
+
+    best_solution_ever.append(best_cost)
+
+    print("solucion Tabu Search:")
+    print(best_solution_ever)
+    return best_solution_ever
+ 
+
+
+
+
+
+
 ####
 #Main
 ####
 
-greedy_det(test3)
+
+
+#greedy_det(test3)
 
 seed = 1
+
+iters = 10
+size = 3
+
 """
 for i in range(5):  
     greedy_estoc(test1, i)
-"""
-"""
+
 for seed in range(5):
 
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
-    hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
 """
-hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
+
+#hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
+
+
+tabu_search(test3, greedy_estoc(test3, seed), seed)
