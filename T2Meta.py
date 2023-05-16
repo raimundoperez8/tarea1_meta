@@ -297,9 +297,9 @@ def genera_costo_sol(vecino, delays, drones):
         else:
             flag = 200
         if int(vecino[i][1]) + int(delays[int(vecino[i][0])][int(vecino[i+1][0])]) <= int(vecino[i+1][1]):
-            flag = 0
+            flag += 0
         else:
-            flag = 200
+            flag += 200
 
     return suma + flag
 
@@ -434,4 +434,4 @@ for seed in range(5):
 
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
 """
-hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
+hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
