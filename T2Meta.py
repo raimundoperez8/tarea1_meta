@@ -477,6 +477,10 @@ def tabu_search(test, sol_inicial, seed, size=3):
                     second_exchange_node = solution[i]
                     break
                 i = i + 1
+                
+            t_actual = time.time()
+            if (t_actual-t_inicio > 180):
+                break
  
             if [first_exchange_node, second_exchange_node] not in tabu_list and [
                 second_exchange_node,
