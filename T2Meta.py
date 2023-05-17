@@ -362,7 +362,7 @@ def obt_mejor_vecino(vecinos, delays, drones):
     return mejor_vecino, mejor_costo
 
 
-def hill_climbing_AM(test, sol_inicial, seed):
+def hill_climbing_AM(test, sol_inicial, seed = 0):
 
     #se fija la semilla a utilizar, entregada como parametro
     random.seed(seed)
@@ -416,7 +416,7 @@ def hill_climbing_AM(test, sol_inicial, seed):
     return sol_actual
 
 
-def hill_climbing_MM(test, sol_inicial, seed):
+def hill_climbing_MM(test, sol_inicial, seed = 0):
 
     #se fija la semilla a utilizar, entregada como parametro
     random.seed(seed)
@@ -635,8 +635,17 @@ for seed in range(5):
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
 """
 
+
+
+hill_climbing_AM(test1, greedy_det(test1))
+#hill_climbing_AM(test3, greedy_estoc(test3, seed), seed)
+
+
+hill_climbing_MM(test1, greedy_det(test1))
 #hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
 
 
-tabu_search(test2, greedy_det(test2))
+
+
+#tabu_search(test2, greedy_det(test2))
 #tabu_search(test2, greedy_estoc(test2, seed))
