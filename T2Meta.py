@@ -33,71 +33,76 @@ def greedy_det(test):
     resultado = []
     suma = 0
 
+    #se preparan las variables del problema, en matrices y listas
     drones, delays, tot = lectura(test)
 
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
         drones[i] = temp
-
     for i in range(len(delays)):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
 
+    #se ordenan los drones segun su tiempo maximo de envio, es decir, los que "caducan" antes, quedan primero
     drones.sort(key = lambda x: x[3])
-    #print(drones)
+
+    #para cada uno de los drones
     for i in range(tot):
-        #print(i)
+
+        #el dron no es el ultimo
         if (i + 1 < tot):
-            #print(i)
+            
+            #se verifica si el tiempo optimo del dron actual es mayor al tiempo actual del ejercicio
             if int(drones[i][2]) >= timeline:
                 
 
-                #tiempo optimo posible
+                #tiempo optimo posible, por lo tanto, el dron se envia en su tiempo optimo y se ajusta el timeline
                 if int(drones[i+1][3]) >= int(drones[i][2]) + int(delays[int(drones[i][0])][int(drones[i+1][0])]):    
                     timeline = int(drones[i][2])
                     res = [drones[i][0], timeline]
                     resultado.append(res)
 
-                    #diferencia entre el optimo y el tiempo del dron
+                    #diferencia entre el optimo y el tiempo del dron (0), se suma a los costos
                     suma += abs(int(drones[i][2]) - timeline)
+
+                    #a la linea de tiempo, se le suma el tiempo de espera obligatorio minimo para el siguiente dron
                     timeline = timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])])
                     agregados +=1
 
-                #optimo "mata" al siguiente dron
+                #optimo "mata" al siguiente dron, impidiendo su envio, por lo que el dron se envia en el tiempo actual 
                 elif (timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])]) >= int(drones[i+1][3])):
                     res = [drones[i][0], timeline]
                     resultado.append(res)
 
-                    #diferencia entre el optimo y el tiempo del dron
+                    #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
                     suma += abs(int(drones[i][2]) - timeline)
                     timeline = timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])])
                     agregados +=1
 
 
-            #el optimo ya paso
+            #el optimo ya paso, por lo que el dron se envia simplemente
             else:
-                #print(i)
-                #print(res)
+
                 res = [drones[i][0], timeline]
                 resultado.append(res)
 
-                #diferencia entre el optimo y el tiempo del dron
+                #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
                 suma += abs(int(drones[i][2]) - timeline)
                 timeline = timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])])
                 agregados +=1
-
+        
+        #el ultimo dron
         else:
-            #el ultimo dron
+            #corresponde al ultimo dron, por lo que simplemente se envia
             res = [drones[i][0], timeline]
             resultado.append(res)
 
-            #diferencia entre el optimo y el tiempo del dron
+            #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
             suma += abs(int(drones[i][2]) - timeline)
             agregados +=1
 
-    #[[ndron, tiempo], costo]
     resultado.append(suma)
     print("Solucion Greedy det:")
     print(resultado)
@@ -117,29 +122,23 @@ def greedy_estoc(test, seed):
     suma = 0
     resultado = []
     dronesmod = []
-
-    ##################
-    #Setup
-
     drones, delays, tot = lectura(test)
 
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
         drones[i] = temp
-
     for i in range(len(delays)):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
 
+    #se ordenan los drones segun su tiempo maximo de envio, es decir, los que "caducan" antes, quedan primero
     drones.sort(key = lambda x: x[3])
 
-    ##################
-    ##################
-    #aqui el algoritmo
-
-    #Se crea un nuevo array modificado, buscando agrupar los tiempos de termino
+    #Se crea un nuevo array modificado, buscando agrupar los tiempos de termino (redondeando hacia abajo)
+    #Es decir, se considera que los drones que terminan dentro de cierto intervalo, son "iguales"
+    #Al ser "iguales", se puede seleccionar cualquiera de ellos en el intervalo en cuestion
     for i in range(len(drones)):
         drontemp = drones[i].copy()
         temp = int(drontemp[3])
@@ -148,9 +147,8 @@ def greedy_estoc(test, seed):
         drontemp[3] = temp
         dronesmod.append(drontemp)
 
-    ######################################
-    ######################################
     #Cuenta los grupos generados segun el metodo anterior, comentar al tener el programa listo (Mantener en el codigo)
+    #Es utilizado en las fases de prueba, buscando un valor universal para generar la agrupacion anterior (es decir, que sea util)
     contar_term = {}
 
     for i in range(tot):
@@ -159,11 +157,7 @@ def greedy_estoc(test, seed):
         else:
             contar_term[dronesmod[i][3]] += 1
 
-    ######################################
-    ######################################
-
-    ######################################
-    #> Agrupar los datos segun su termino
+    #Se crea una matriz, de distintos arrays, agrupando los drones segun su nuevo tiempo de "termino"
     termino = -1
     indice = -1
     agrupacion = []
@@ -177,29 +171,35 @@ def greedy_estoc(test, seed):
         else:
             agrupacion[indice].append(dronesmod[i])
 
-    ######################################  
-    #> Aplicar logica similar a la anterior:
-    
-    indice = 0
 
+    #Se aplica una logica similar a la anterior:    
+    indice = 0
     for i in range(tot):
+        #se elige un dron aleatoriamente dentro del grupo correspondiente
         numero_dron = random.randint(0, len(agrupacion[indice])-1)
 
-        #Actualizar timeline en base al dron agregado anterior mente y el elegido actual
+        #Se debe Actualizar el timeline en base al dron agregado anteriormente y el elegido actual
         if (len(resultado) > 0):
-            #En el array delay del dron anterior, agregar la diferencia requeria por el dron actual
+
+            #En el array delay del dron previamente agregado a la solucion (si existe),
+            #se busca y se agrega la diferencia minima requerida para poder enviar el dron elegido
             del_anterior = delays[int(resultado[-1][0])]
             espera_actual = del_anterior[int(agrupacion[indice][numero_dron][0])]
             timeline = timeline + int(espera_actual)
 
+        #el dron no es el ultimo
         if (i + 1 < tot):
-            #Optimo > Timeline
+
+            #se verifica si el tiempo optimo del dron actual es mayor al tiempo actual del ejercicio
             if int(agrupacion[indice][numero_dron][2]) >= timeline:
+                
                 #Comparte intervalo
                 if (len(agrupacion[indice]) > 1):
                     #Calcular si el optimo es posible
                     posible = 1
 
+                    #Se revisa si utilizar el tiempo optimo "mata" a algun dron restante en el grupo, impidiendo su envio
+                    #En caso de hacerlo, posible = 0, pues no es conveniente hacerlo
                     for j in range(len(agrupacion[indice])):
                         if (j == numero_dron):
                             continue
@@ -211,92 +211,111 @@ def greedy_estoc(test, seed):
                             if (int(drones[int(agrupacion[indice][j][0])][3]) - diferencia < 0):
                                 posible = 0
 
+                    #tiempo optimo posible, por lo tanto, el dron se envia en su tiempo optimo y se ajusta el timeline
                     if (posible):
                         timeline = int(agrupacion[indice][numero_dron][2])
                         res = [agrupacion[indice][numero_dron][0], timeline]
                         resultado.append(res)
+
+                        #diferencia entre el optimo y el tiempo del dron (0), se suma a los costos
                         suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
                         agregados +=1
+
+                        #Se elimina el elemento agregado del grupo correspondiente
                         agrupacion[indice].pop(numero_dron)
 
+                        #Si el intervalo se vacia, se pasa al siguiente
                         if (len(agrupacion[indice]) == 0):
                             indice += 1
 
                     else:
                         res = [agrupacion[indice][numero_dron][0], timeline]
                         resultado.append(res)
+
+                        #diferencia entre el optimo y el tiempo del dron (0), se suma a los costos
                         suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
                         agregados +=1
-                        #Se elimina el elemento agregado
+                        
+                        #Se elimina el elemento agregado del grupo correspondiente
                         agrupacion[indice].pop(numero_dron)
 
+                        #Si el intervalo se vacia, se pasa al siguiente
                         if (len(agrupacion[indice]) == 0):
                             indice += 1
 
-                #Unico/Ultimo en intervalo
-                #Apuesto por el optimo
+                #Es el Unico/Ultimo dron en el intervalo actual
+                #Se envia el dron en el tiempo optimo correspondiente
                 else:
                     timeline = int(agrupacion[indice][numero_dron][2])
                     res = [agrupacion[indice][numero_dron][0], timeline]
                     resultado.append(res)
+
+                    #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
                     suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
                     agregados +=1
+
+                    #Se elimina el elemento agregado del grupo correspondiente
                     agrupacion[indice].pop(numero_dron)
 
+                    #Si el intervalo se vacia, se pasa al siguiente
                     if (len(agrupacion[indice]) == 0):
                         indice += 1
 
-            #el optimo ya paso
-            else:
+            #el optimo ya paso, por lo que el dron se envia simplemente
+            else:                
                 res = [agrupacion[indice][numero_dron][0], timeline]
                 resultado.append(res)
+
+                #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
                 suma += abs(int(agrupacion[indice][numero_dron][2]) - timeline)
                 agregados +=1
-                #Se elimina el elemento agregado
+
+                #Se elimina el elemento agregado del grupo correspondiente
                 agrupacion[indice].pop(numero_dron)
 
+                #Si el intervalo se vacia, se pasa al siguiente
                 if (len(agrupacion[indice]) == 0):
                     indice += 1
-
+        
+        #el ultimo dron
         else:
-            #el ultimo dron
+
+            #corresponde al ultimo dron, por lo que simplemente se envia
             res = [agrupacion[indice][0][0], timeline]
             resultado.append(res)
+
+            #diferencia entre el optimo y el tiempo de envio del dron se suma a los costos
             suma += abs(int(agrupacion[indice][0][2]) - timeline)
             agregados +=1
 
-    #[[ndron, tiempo], costo]
     resultado.append(suma)
     print("Solucion Greedy Estoc:")
     print(resultado)
     print(agregados)
     return resultado
 
-    #> Aplicar logica similar a la anterior:
-    #Selecciono uno del grupo al azar, veo si lo puedo mandar en el optimo sin matar al resto del grupo, lo añado en tiempo x (aqui hay que pensar un par de cosas)
-    #Una vez termino el grupo, siguiente grupo
 
-    #####
 
 
 #Funcion para obtener el costo de una solucion
 def genera_costo_sol(vecino, delays, drones):
     suma = 0
 
-    for dron in vecino:
-        
+    #se suma la diferencia entre el tiempo de envio y el optimo, para cada dron
+    for dron in vecino:        
         id = dron[0]
         tiempo = dron[1]
         suma += abs(int(tiempo) - int(drones[int(id)][2]))
-
     
-    #Validate_sol(): if incalida suma += 100?
+    #Validate_sol(): if invalida suma += 200 en cada caso
     flag = 0
     for i in range(len(vecino)-1):
+        #se verifica que el dron haya sido enviado dentro del plazo
         if int(drones[int(vecino[i][0])][1]) <= int(vecino[i][1]) and int(drones[int(vecino[i][0])][3]) >= int(vecino[i][1]):
             flag = 0
         else:
             flag = 200
+        #se verifica que el tiempo minimo entre drones se cumpla
         if int(vecino[i][1]) + int(delays[int(vecino[i][0])][int(vecino[i+1][0])]) <= int(vecino[i+1][1]):
             flag += 0
         else:
@@ -306,31 +325,32 @@ def genera_costo_sol(vecino, delays, drones):
 
 
 #Funcion para obtener los vecinos de una solucion determinada
+#Se generan nuevas soluciones (factible o no) en base a una solucion dada
 def genera_vecinos(solucion):
     vecinos = []
     for i in range(len(solucion)):
         for j in range(i + 1, len(solucion)):
             vecino = solucion.copy()
 
+            #se genera una perturbacion en base a la semilla entregada a la funcion
             delta1 = random.randint(0,8) - 4
             delta2 = random.randint(0,8) - 4
 
+            #se intercambia el orden de envio de dos drones, y los tiempos se perturban en base al delta generado
             vecino[i] = solucion[j].copy()
             vecino[i][1] = solucion[i][1] + delta1
             vecino[j] = solucion[i].copy()
             vecino[j][1] = solucion[j][1] + delta2
             vecinos.append(vecino)
-
-    #print("vecinos")
-    #print(vecinos[0])
-    
+  
     return vecinos
 
-
+#En base a las soluciones generadas, se obtiene la mejor de estas, calculando su costo
 def obt_mejor_vecino(vecinos, delays, drones):
     mejor_costo = genera_costo_sol(vecinos[0], delays, drones) #costo del primer vecino para iniciarlo
     mejor_vecino = vecinos[0]
 
+    #se comparan todos los costos
     for vecino in vecinos:
         costo_actual = genera_costo_sol(vecino, delays, drones)
         
@@ -338,44 +358,58 @@ def obt_mejor_vecino(vecinos, delays, drones):
             mejor_costo = costo_actual
             mejor_vecino = vecino
 
+    #se devuelve el mejor (menor) costo
     return mejor_vecino, mejor_costo
 
 
 def hill_climbing_AM(test, sol_inicial, seed):
+
+    #se fija la semilla a utilizar, entregada como parametro
     random.seed(seed)
 
+    #se preparan las variables del problema, en matrices y listas
     drones, delays, tot = lectura(test)
 
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
         drones[i] = temp
-
     for i in range(len(delays)):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
 
-
+    #se separa el costo y solucion inicial entregados como parametros
     costo_inicial = sol_inicial[len(sol_inicial)-1]
     sol_inicial.pop(len(sol_inicial)-1)
 
     sol_actual = sol_inicial
     costo_actual = costo_inicial
+
+    #a partir de la solucion entregada, se generan los vecinos de esta
     vecinos_actuales = genera_vecinos(sol_actual)
+
+    #se guarda el mejor vecino de la lista de vecinos
     mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
-    #revisar condiciones para seguir iterando
+    #si el vecino encontrado es mejor que la solucion actual:
+    #si esto no ocurre, estamos en el optimo local
     while mejor_costo < costo_actual:
+
+        #reemplazamos la solucion/costo actuales por los nuevos solucion/costo (se mejora la solucion)
         sol_actual = mejor_vecino
         costo_actual = mejor_costo
+
+        #a partir de la solucion entregada, se generan los vecinos de esta
         vecinos_actuales = genera_vecinos(sol_actual)
         mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+
+        #habiendo mejorado, y pudiendo mejorar de nuevo, el agoritmo termina
+        #puesto que ya se hizo una mejora (lo pedido)
         if mejor_costo < costo_actual:
             break
 
-    sol_actual.append(costo_actual) 
-    
+    sol_actual.append(costo_actual)    
     print("solucion Hill AM:")
     print(sol_actual)
 
@@ -383,42 +417,58 @@ def hill_climbing_AM(test, sol_inicial, seed):
 
 
 def hill_climbing_MM(test, sol_inicial, seed):
+
+    #se fija la semilla a utilizar, entregada como parametro
     random.seed(seed)
 
+    #se preparan las variables del problema, en matrices y listas
     drones, delays, tot = lectura(test)
 
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
         drones[i] = temp
-
     for i in range(len(delays)):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
 
+    #se separa el costo y solucion inicial entregados como parametros
     costo_inicial = sol_inicial[len(sol_inicial)-1]
     sol_inicial.pop(len(sol_inicial)-1)
 
     sol_actual = sol_inicial
     costo_actual = costo_inicial
+
+    #a partir de la solucion entregada, se generan los vecinos de esta
     vecinos_actuales = genera_vecinos(sol_actual)
-    #print(vecinos_actuales)
+
+    #se guarda el mejor vecino de la lista de vecinos
     mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
+    #se inicia el timer, con el fin de poder cumplir con el TO de 180s
     t_inicio = time.time()
-    #revisar condiciones para seguir iterando
+
+    #si el vecino encontrado es mejor que la solucion actual:
+    #si esto no ocurre, estamos en el optimo local.
+    #En otras palabras, el algoritmo mejorara la solucion hasta el TO o hasta estar en el optimo local
     while mejor_costo < costo_actual:
+
+        #reemplazamos la solucion/costo actuales por los nuevos solucion/costo (se mejora la solucion)
         sol_actual = mejor_vecino
         costo_actual = mejor_costo
+
+        #a partir de la solucion entregada, se generan los vecinos de esta
+        #y se obtiene el mejor vecino-costo entre estos
         vecinos_actuales = genera_vecinos(sol_actual)
         mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+
+        #se revisa la condicion de TO
         t_actual = time.time()
         if (t_actual-t_inicio > 180):
             break
 
     sol_actual.append(costo_actual) 
-
     print("solucion Hill MM:")
     print(sol_actual)
 
@@ -427,26 +477,27 @@ def hill_climbing_MM(test, sol_inicial, seed):
 
 
 def tabu_search(test, sol_inicial, size = 3, seed = 0):
+
+    #se fija la semilla a utilizar. Al no ser entregada, tendra valor 0
     random.seed(seed)
 
+    #se preparan las variables del problema, en matrices y listas
     drones, delays, tot = lectura(test)
 
     for i in range(len(drones)):
         temp = drones[i]
         temp = temp.split(" ")
         drones[i] = temp
-
     for i in range(len(delays)):
         temp = delays[i]
         temp = temp.split(" ")
         delays[i] = temp
 
+    #se separa el costo y solucion inicial entregados como parametros
     costo_inicial = sol_inicial[len(sol_inicial)-1]
     sol_inicial.pop(len(sol_inicial)-1)
 
-
     #tabu logic
-
 
     solution = sol_inicial    
     best_cost = costo_inicial
@@ -454,32 +505,38 @@ def tabu_search(test, sol_inicial, size = 3, seed = 0):
 
     best_solution_ever = solution
 
+    #se inicia el timer, con el fin de poder cumplir con el TO de 180s
     t_actual = 0
     t_inicio = time.time()
 
-    
+    #a partir de la solucion entregada, se generan los vecinos de esta
     vecinos_actuales = genera_vecinos(solution)
+
+    #se guarda el mejor vecino de la lista de vecinos
     mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
 
-    #No se ha aceptado un movimiento
+    #0 = No se ha aceptado un movimiento (el movimiento esta en la lista tabu)
+    #1 = El movimiento es valido (no esta en la lista tabu)
+    #parte como 1, pues la lista tabu inicialmente esta vacia
     movimiento = 1
- 
+
+    #se revisa la condicion de TO
     while (t_actual-t_inicio < 180):
 
         if movimiento == 1:
-            #print("lol")
+            #al poder generar el desplazamiento, se generan los vecinos de la nueva solucion
             vecinos_actuales = genera_vecinos(solution)
+            #se busca el mejor de los nuevos vecinos
             mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
-            #print(vecinos_actuales)
-            #print(mejor_vecino)
+
             best_solution = mejor_vecino
         else:
-            
+            #al no poder realizarse el movimiento, se busca un nuevo candidato en la lista de vecinos actuales
             mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
             best_solution = mejor_vecino
         
-
- 
+        #teniendo un movimiento candidato, se busca a que movimiento corresponde dicho vecino candidato
+        #(permutacion en el orden de envio de los drones)
         found = False
         while found is False:
             i = 0
@@ -488,15 +545,20 @@ def tabu_search(test, sol_inicial, size = 3, seed = 0):
                 if best_solution[i][0] != solution[i][0]:
                     first_exchange_node = best_solution[i][0]
                     second_exchange_node = solution[i][0]
+
+                    #se almacena el dron intercambiado y la posicion asociada
                     indice_c = i
                     valor_c = best_solution[i][0]
                     break
                 i = i + 1
 
+            #se revisa la condicion de TO
             t_actual = time.time()
             if (t_actual-t_inicio > 180):
                 break
- 
+
+            #se verifica si el movimiento (o su reciproco) se encuentra en la lista tabu
+            #al no estar, se agrega y se acepta el movimiento (movimiento = 1)
             if [first_exchange_node, second_exchange_node] not in tabu_list and [
                 second_exchange_node,
                 first_exchange_node,
@@ -504,42 +566,43 @@ def tabu_search(test, sol_inicial, size = 3, seed = 0):
                 tabu_list.append([first_exchange_node, second_exchange_node])
                 found = True
                 movimiento = 1
+
+                #se realiza el movimiento, actualizando la solucion actual/mejor solucion
                 solution = best_solution
                 cost = mejor_costo
                 if cost < best_cost:
                     best_cost = cost
                     best_solution_ever = solution
                 
-
+            #movimiento en lista tabu
             else:
                 #ignorar movimiento, ver siguiente opcion
-                #print("oh no")
                 movimiento = 0
+
+                #se busca el movimiento candidato en la lista de vecinos
                 for mov in vecinos_actuales:
                     
-
+                    #se elimina el candidato de la lista, pues es un candidato "invalido"
+                    #esto gracias al almacenamiento previo de dron-posicion guardados
                     if (mov[indice_c][0] == valor_c):
 
                         indice = vecinos_actuales.index(mov)
                         del vecinos_actuales[indice]
                         break
 
-                #print(indice)
-                #print(len(vecinos_actuales))
-               
+                #la mejor solucion corresponde a la mejor solucion previa (es decir, se ignora la solucion encontrada)
                 best_solution = solution
 
- 
+        #si la lista tabu supera su tamano asignado, se elimina el elemento mas viejo de esta
         if len(tabu_list) >= size:
             tabu_list.pop(0)
  
         t_actual = time.time()
 
-
     best_solution_ever.append(best_cost)
-
     print("solucion Tabu Search:")
     print(best_solution_ever)
+
     return best_solution_ever
  
 
@@ -575,5 +638,5 @@ for seed in range(5):
 #hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
 
 
-tabu_search(test1, greedy_det(test1))
+tabu_search(test2, greedy_det(test2))
 #tabu_search(test2, greedy_estoc(test2, seed))
