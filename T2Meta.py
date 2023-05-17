@@ -426,7 +426,7 @@ def hill_climbing_MM(test, sol_inicial, seed):
 
 
 
-def tabu_search(test, sol_inicial, seed, iters=10, size=3):
+def tabu_search(test, sol_inicial, seed, size=3):
     random.seed(seed)
 
     drones, delays, tot = lectura(test)
@@ -447,36 +447,17 @@ def tabu_search(test, sol_inicial, seed, iters=10, size=3):
 
     #tabu logic
 
-    """
-    Pure implementation of Tabu search algorithm for a Travelling Salesman Problem in Python.
- 
-    :param first_solution: The solution for the first iteration of Tabu search using the redundant resolution strategy
-    in a list.
-    :param distance_of_first_solution: The total distance that Travelling Salesman will travel, if he follows the path
-    in first_solution.
-    :param dict_of_neighbours: Dictionary with key each node and value a list of lists with the neighbors of the node
-    and the cost (distance) for each neighbor.
-    :param iters: The number of iterations that Tabu search will execute.
-    :param size: The size of Tabu List.
-    :return best_solution_ever: The solution with the lowest distance that occurred during the execution of Tabu search.
-    :return best_cost: The total distance that Travelling Salesman will travel, if he follows the path in best_solution
-    ever.
- 
-    """
-    
-    #first_solution, distance_of_first_solution, dict_of_neighbours, iters, size
-
-    count = 1
-
 
     solution = sol_inicial    
     best_cost = costo_inicial
-
     tabu_list = list()
 
     best_solution_ever = solution
+
+    t_actual = 0
+    t_inicio = time.time()
  
-    while count <= iters:
+    while (t_actual-t_inicio < 180):
 
         vecinos_actuales = genera_vecinos(solution)
         mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
@@ -515,7 +496,7 @@ def tabu_search(test, sol_inicial, seed, iters=10, size=3):
         if len(tabu_list) >= size:
             tabu_list.pop(0)
  
-        count = count + 1
+        t_actual = time.time()
 
 
     best_solution_ever.append(best_cost)
@@ -540,7 +521,7 @@ def tabu_search(test, sol_inicial, seed, iters=10, size=3):
 
 seed = 1
 
-iters = 10
+
 size = 3
 
 """
@@ -552,7 +533,7 @@ for seed in range(5):
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
 """
 
-#hill_climbing_MM(test1, greedy_estoc(test1, seed), seed)
+hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
 
 
 tabu_search(test3, greedy_estoc(test3, seed), seed)
