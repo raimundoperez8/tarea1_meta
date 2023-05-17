@@ -426,7 +426,7 @@ def hill_climbing_MM(test, sol_inicial, seed):
 
 
 
-def tabu_search(test, sol_inicial, seed, size=3):
+def tabu_search(test, sol_inicial, size = 3, seed = 0):
     random.seed(seed)
 
     drones, delays, tot = lectura(test)
@@ -456,28 +456,43 @@ def tabu_search(test, sol_inicial, seed, size=3):
 
     t_actual = 0
     t_inicio = time.time()
+
+    
+    vecinos_actuales = genera_vecinos(solution)
+    mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+
+    #No se ha aceptado un movimiento
+    movimiento = 1
  
     while (t_actual-t_inicio < 180):
 
-        vecinos_actuales = genera_vecinos(solution)
-        mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+        if movimiento == 1:
+            #print("lol")
+            vecinos_actuales = genera_vecinos(solution)
+            mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+            #print(vecinos_actuales)
+            #print(mejor_vecino)
+            best_solution = mejor_vecino
+        else:
+            
+            mejor_vecino, mejor_costo = obt_mejor_vecino(vecinos_actuales, delays, drones)
+            best_solution = mejor_vecino
+        
 
-        index_of_best_solution = 0
-
-        best_solution = mejor_vecino
-        #best_cost_index = len(best_solution) - 1
  
         found = False
         while found is False:
             i = 0
             while i < len(best_solution):
  
-                if best_solution[i] != solution[i]:
-                    first_exchange_node = best_solution[i]
-                    second_exchange_node = solution[i]
+                if best_solution[i][0] != solution[i][0]:
+                    first_exchange_node = best_solution[i][0]
+                    second_exchange_node = solution[i][0]
+                    indice_c = i
+                    valor_c = best_solution[i][0]
                     break
                 i = i + 1
-                
+
             t_actual = time.time()
             if (t_actual-t_inicio > 180):
                 break
@@ -488,14 +503,32 @@ def tabu_search(test, sol_inicial, seed, size=3):
             ] not in tabu_list:
                 tabu_list.append([first_exchange_node, second_exchange_node])
                 found = True
+                movimiento = 1
                 solution = best_solution
                 cost = mejor_costo
                 if cost < best_cost:
                     best_cost = cost
                     best_solution_ever = solution
+                
+
             else:
-                index_of_best_solution = index_of_best_solution + 1
-                best_solution = mejor_vecino
+                #ignorar movimiento, ver siguiente opcion
+                #print("oh no")
+                movimiento = 0
+                for mov in vecinos_actuales:
+                    
+
+                    if (mov[indice_c][0] == valor_c):
+
+                        indice = vecinos_actuales.index(mov)
+                        del vecinos_actuales[indice]
+                        break
+
+                #print(indice)
+                #print(len(vecinos_actuales))
+               
+                best_solution = solution
+
  
         if len(tabu_list) >= size:
             tabu_list.pop(0)
@@ -523,7 +556,9 @@ def tabu_search(test, sol_inicial, seed, size=3):
 
 #greedy_det(test3)
 
-seed = 1
+
+# 0 - 4
+seed = 0
 
 
 size = 3
@@ -537,7 +572,8 @@ for seed in range(5):
     hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
 """
 
-hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
+#hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
 
 
-tabu_search(test3, greedy_estoc(test3, seed), seed)
+tabu_search(test1, greedy_det(test1))
+#tabu_search(test2, greedy_estoc(test2, seed))
