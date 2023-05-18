@@ -3,10 +3,6 @@ import random
 import linecache as lc
 import time
 
-test3 = "t2_Deimos.txt"
-test2 = "t2_Europa.txt"
-test1 = "t2_Titan.txt"
-
 
 def lectura(test):
     drones = []
@@ -57,7 +53,6 @@ def greedy_det(test):
             #se verifica si el tiempo optimo del dron actual es mayor al tiempo actual del ejercicio
             if int(drones[i][2]) >= timeline:
                 
-
                 #tiempo optimo posible, por lo tanto, el dron se envia en su tiempo optimo y se ajusta el timeline
                 if int(drones[i+1][3]) >= int(drones[i][2]) + int(delays[int(drones[i][0])][int(drones[i+1][0])]):    
                     timeline = int(drones[i][2])
@@ -81,10 +76,8 @@ def greedy_det(test):
                     timeline = timeline + int(delays[int(drones[i][0])][int(drones[i+1][0])])
                     agregados +=1
 
-
             #el optimo ya paso, por lo que el dron se envia simplemente
             else:
-
                 res = [drones[i][0], timeline]
                 resultado.append(res)
 
@@ -295,8 +288,6 @@ def greedy_estoc(test, seed):
     return resultado
 
 
-
-
 #Funcion para obtener el costo de una solucion
 def genera_costo_sol(vecino, delays, drones):
     suma = 0
@@ -344,6 +335,7 @@ def genera_vecinos(solucion):
             vecinos.append(vecino)
   
     return vecinos
+
 
 #En base a las soluciones generadas, se obtiene la mejor de estas, calculando su costo
 def obt_mejor_vecino(vecinos, delays, drones):
@@ -475,7 +467,6 @@ def hill_climbing_MM(test, sol_inicial, seed = 0):
     return sol_actual
 
 
-
 def tabu_search(test, sol_inicial, size = 3, seed = 0):
 
     #se fija la semilla a utilizar. Al no ser entregada, tendra valor 0
@@ -604,48 +595,64 @@ def tabu_search(test, sol_inicial, size = 3, seed = 0):
     print(best_solution_ever)
 
     return best_solution_ever
- 
-
-
-
-
-
 
 ####
 #Main
 ####
 
+def main():
+    #casos de prueba
+    test3 = "t2_Deimos.txt"
+    test2 = "t2_Europa.txt"
+    test1 = "t2_Titan.txt"
 
+    flag = True
 
-#greedy_det(test3)
+    while flag:
+        tecnica = -1
+        caso = -1
+        semilla = -1
+        sol_inicial = -1
+        exit = -1
 
+        while tecnica not in range(1,6):
+            tecnica = int(input("Elige la tecnica a utilizar:\n 1.Greedy determinista\n 2.Greedy estocastico\n 3.Hill-climbing AM\n 4.Hill-climbing MM\n 5.Tabu Search\n"))
+        while caso not in range(1,4):
+            caso = int(input("Elige caso de prueba a utilizar (15, 30 o 100 UAVs -> 1-2-3): "))
+        while semilla not in range(0,5):
+            semilla = int(input("Elige la semilla a utilizar (entre 0 y 4): "))
+        
+        if caso == 1:
+            test = test1
+        if caso == 2:
+            test = test2
+        if caso == 3:
+            test = test3
 
-# 0 - 4
-seed = 0
+        if tecnica in range(3,6):
+            while sol_inicial not in range(1,3):
+                sol_inicial = int(input("¿Que solucion inicial deseas utilizar?:\n 1.Determinista\n 2.Estocastica\n"))
+                if sol_inicial == 1:
+                    solucion_ini = greedy_det(test)
+                elif sol_inicial == 2:
+                    solucion_ini = greedy_estoc(test, semilla)
 
+        if tecnica == 1:
+            greedy_det(test)
+        if tecnica == 2:
+            greedy_estoc(test, semilla)
+        if tecnica == 3:
+            hill_climbing_AM(test, solucion_ini, semilla)
+        if tecnica == 4:
+            hill_climbing_MM(test, solucion_ini, semilla)
+        if tecnica == 5:
+            tabu_search(test, solucion_ini, semilla)
+        
+        while exit not in range(1,3):
+            exit = int(input("¿Deseas finalizar las pruebas?\n 1.si\n 2.no\n"))
+        
+        if (exit == 1):
+            flag = False
 
-size = 3
-
-"""
-for i in range(5):  
-    greedy_estoc(test1, i)
-
-for seed in range(5):
-
-    hill_climbing_AM(test1, greedy_estoc(test1, seed), seed)
-"""
-
-
-
-hill_climbing_AM(test1, greedy_det(test1))
-#hill_climbing_AM(test3, greedy_estoc(test3, seed), seed)
-
-
-hill_climbing_MM(test1, greedy_det(test1))
-#hill_climbing_MM(test3, greedy_estoc(test3, seed), seed)
-
-
-
-
-#tabu_search(test2, greedy_det(test2))
-#tabu_search(test2, greedy_estoc(test2, seed))
+if __name__ == "__main__":
+    main()
